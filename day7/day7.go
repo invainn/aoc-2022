@@ -22,49 +22,13 @@ func (ftn FileTreeNode) String() string {
 	return ftn.name
 }
 
-func (ftn FileTreeNode) PrintChildren() []string {
-	result := []string{}
-
-	for _, child := range ftn.children {
-		result = append(result, (*child).name)
-	}
-
-	return result
-}
-
-func (ftn FileTreeNode) PrintDirectory() {
-	for _, ptr := range ftn.children {
-		child := *ptr
-		if child.IsDirectory() {
-			child.PrintDirectory()
-		}
-	}
-}
-
-func (ftn FileTreeNode) GetDirectorySizesHelper(results *[]int) int {
+func (ftn FileTreeNode) GetDirectorySizes(results []int) []int {
 	directorySize := 0
 	for _, ptr := range ftn.children {
 		child := *ptr
 		if child.IsDirectory() {
-			childDirectorySize := child.GetDirectorySizesHelper(results)
-			*results = append(*results, childDirectorySize)
-			directorySize += childDirectorySize
-		} else {
-			directorySize += child.size
-		}
-	}
-	return directorySize
-}
-
-func (ftn FileTreeNode) GetDirectorySizes() []int {
-	results := []int{}
-
-	directorySize := 0
-	for _, ptr := range ftn.children {
-		child := *ptr
-		if child.IsDirectory() {
-			childDirectorySize := child.GetDirectorySizesHelper(&results)
-			results = append(results, childDirectorySize)
+			results = child.GetDirectorySizes(results)
+			childDirectorySize := results[len(results)-1]
 			directorySize += childDirectorySize
 		} else {
 			directorySize += child.size
@@ -132,14 +96,13 @@ func main() {
 	}
 
 	// Part 1
-	directorySizes := (*directoryTracker.Peek()).GetDirectorySizes()
+	directorySizes := (*directoryTracker.Peek()).GetDirectorySizes([]int{})
 	sumOfDirectoriesLessThan100000 := 0
 	for _, size := range directorySizes {
 		if size <= 100000 {
 			sumOfDirectoriesLessThan100000 += size
 		}
 	}
-
 	fmt.Printf("Sum of total sizes of directories that are at most size 100k: %d\n", sumOfDirectoriesLessThan100000)
 
 	// Part 2
